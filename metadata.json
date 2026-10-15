@@ -1,0 +1,6 @@
+{
+  "name": "Sherkety Legal Desk",
+  "description": "نظام إدارة أعمال ومكتب مدير الشؤون القانونية بشركة شركتي لتكنولوجيا المعلومات",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
