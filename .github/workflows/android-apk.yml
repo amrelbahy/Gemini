@@ -57,7 +57,7 @@ jobs:
             exit 0
           fi
 
-          echo "Gradle Wrapper script is missing. Generating it..."
+          echo "Generating missing Gradle Wrapper..."
 
           DIST_URL=$(grep '^distributionUrl=' gradle/wrapper/gradle-wrapper.properties \
             | head -n 1 | cut -d '=' -f 2- | sed 's/\\:/:/g')
@@ -71,7 +71,7 @@ jobs:
             | sed -E 's/^gradle-([0-9][0-9.]*)-(bin|all)\.zip$/\1/')
 
           if [ -z "$GRADLE_VERSION" ] || [ "$GRADLE_VERSION" = "$(basename "$DIST_URL")" ]; then
-            echo "ERROR: Could not determine Gradle version from $DIST_URL"
+            echo "ERROR: Could not determine Gradle version."
             exit 1
           fi
 
@@ -89,6 +89,19 @@ jobs:
 
           test -f ./gradle/wrapper/gradle-wrapper.jar
           test -f ./gradlew
+
+      - name: Generate Debug Keystore
+        run: |
+          keytool -genkeypair \
+            -v \
+            -keystore debug.keystore \
+            -storepass android \
+            -alias androiddebugkey \
+            -keypass android \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -dname "CN=Android Debug,O=Android,C=US"
 
       - name: Build Debug APK
         run: |
