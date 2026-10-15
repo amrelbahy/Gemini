@@ -1,5 +1,5 @@
 
-name: Build Gemini Android APK
+name: Inspect and Build Gemini APK
 
 on:
   workflow_dispatch:
@@ -38,8 +38,8 @@ jobs:
           SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
 
           if [ ! -x "$SDKMANAGER" ]; then
-            echo "ERROR: sdkmanager not found at $SDKMANAGER"
-            find "$ANDROID_HOME/cmdline-tools" -name sdkmanager -type f
+            echo "ERROR: sdkmanager not found"
+            find "$ANDROID_HOME/cmdline-tools" -name sdkmanager -type f || true
             exit 1
           fi
 
@@ -50,32 +50,28 @@ jobs:
             "platforms;android-36" \
             "build-tools;36.0.0"
 
-      - name: Prepare debug signing key
+      - name: Inspect project files
         run: |
-          chmod +x ./gradlew
+          echo "Current directory:"
+          pwd
 
-          if [ ! -f debug.keystore ]; then
-            keytool -genkeypair -v \
-              -keystore debug.keystore \
-              -storepass android \
-              -alias androiddebugkey \
-              -keypass android \
-              -keyalg RSA \
-              -keysize 2048 \
-              -validity 10000 \
-              -dname "CN=Android Debug,O=Android,C=US"
-          fi
+          echo "Root files:"
+          ls -la
 
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
+          echo "Gradle wrapper files:"
+          find . -type f \( \
+            -name "gradlew" -o \
+            -name "gradlew.bat" -o \
+            -name "gradle-wrapper.properties" \
+          \) -print
 
-      - name: Build Debug APK
-        run: ./gradlew --no-daemon assembleDebug
+          echo "Gradle build files:"
+          find . -maxdepth 5 -type f \( \
+            -name "build.gradle" -o \
+            -name "build.gradle.kts" -o \
+            -name "settings.gradle" -o \
+            -name "settings.gradle.kts" \
+          \) -print
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: Gemini-debug-APK
-          path: app/build/outputs/apk/debug/*.apk
-          if-no-files-found: error
-          retention-days: 7
+          echo "Android manifests:"
+          find . -type f -name "AndroidManifest.xml" -print
